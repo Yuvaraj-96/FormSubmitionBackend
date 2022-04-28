@@ -11,13 +11,60 @@ mongoose.connect('mongodb+srv://Yuvaraj:Admin123@cluster0.lpdgs.mongodb.net/myFi
 
 const userSchema = new mongoose.Schema({
     name:String,
+    fullname:String,
+    phoneNumber:String,
     email:String,
     password:String
 });
 
 const User = new mongoose.model("Portfoliouser",userSchema)
 
-app.get("/", (req,res)=>{
+const PortfolioSchema = new mongoose.Schema({
+    name:String,
+    fullname:String,
+    jobdescription:String,
+    area1:String,
+    area2:String,
+    gitlink:String,
+    services:{
+        service:String,
+        servicearea:{
+            serviceareatitle1:String,
+            serviceareadesc1:String,
+            serviceareatitle2:String,
+            serviceareadesc2:String,
+            serviceareatitle3:String,
+            serviceareadesc3:String
+        }
+    },
+    cvlink:String,
+    yearexperiance:String,
+    projectcomplited:String,
+    companies:String,
+});
+
+const Portfoliodata = new mongoose.model("Portfoliodata",PortfolioSchema)
+
+
+
+
+app.get('/username/:username', (req,res)=>{
+    Portfoliodata.findOne({username:req.params.username},(err,Portfoliodata)=>{
+        if(Portfoliodata){
+            // if(Portfoliodata.username){
+                res.send({Portfoliodata:Portfoliodata})
+            // }else{
+            //     res.send({message:"User not register alreadyPassword is incorrect"})
+            // }
+            
+        }else{
+
+            res.send({message:" User is not register already"})           
+        }
+    })
+
+
+
     res.send("My API");
 });
 
@@ -46,7 +93,7 @@ app.post("/login", (req,res)=>{
 
 app.post("/register", (req,res)=>{
     const{name,email,password} = req.body;
-    User.findOne({email:email},(err,user)=>{
+    User.findOne({email:email.toLowerCase()},(err,user)=>{
         if(user){
             res.send({message:" User already register"})
         }else{
