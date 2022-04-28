@@ -7,7 +7,7 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(cors());
 
-mongoose.connect('mongodb+srv://3@cluster0.lpdgs.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',{useNewUrlParser:true,useUnifiedTopology:true},()=>{console.log('DB Connected')});
+mongoose.connect('mongodb+srv://3@?retryWrites=true&w=majority',{useNewUrlParser:true,useUnifiedTopology:true},()=>{console.log('DB Connected')});
 
 const userSchema = new mongoose.Schema({
     name:String,
