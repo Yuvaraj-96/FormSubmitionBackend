@@ -6,7 +6,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(cors());
+const port = process.env.PORT || 9002;
 
+mongoose.connect('mongodb+srv://Yuvaraj:Admin123@cluster0.lpdgs.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',{useNewUrlParser:true,useUnifiedTopology:true},()=>{console.log('Atles DB Connected')});
 
 
 const userSchema = new mongoose.Schema({
@@ -14,21 +16,21 @@ const userSchema = new mongoose.Schema({
     fullname:String,
     phoneNumber:String,
     email:String,
-    password:String
+    password:String,
+    date: { type: Date, default: Date.now },
 });
 
 const User = new mongoose.model("Portfoliouser",userSchema)
 
 const PortfolioSchema = new mongoose.Schema({
-    name:String,
+    username:String,
     fullname:String,
-    // phoneNumber:String,
-    // email:String,
-    // password:String,
     jobdescription:String,
     area1:String,
     area2:String,
     gitlink:String,
+    instalink:String,
+    linkedinlink:String,
     services:{
         service:String,
         servicearea:{
@@ -44,18 +46,22 @@ const PortfolioSchema = new mongoose.Schema({
     yearexperiance:String,
     projectcomplited:String,
     companies:String,
+    permition:Boolean,
+    workdescription:String,
+    email:String,
+    mobile:String,
+    date: { type: Date, default: Date.now },
 });
 
 const Portfoliodata = new mongoose.model("Portfoliodata",PortfolioSchema)
 
 
-
-
-app.post("/getuserdatas", (req,res)=>{
+app.post("/getuserdatas", async(req,res)=>{
     const{username} = req.body;
-    console.log(username+" name")
-    Portfoliodata.findOne({name:username},(err,Portfoliodatauser)=>{
-       // console.log(Portfoliodatauser+" Portfoliodatauser")
+    console.log(" /getuserdatas ")
+    console.log(username+" : username")
+   await Portfoliodata.findOne({username:username}).then((Portfoliodatauser)=>{
+     console.log(Portfoliodatauser+" Portfoliodatauser")
         if(Portfoliodatauser){
             // if(password===user.password){
                 res.send({Portfoliodatauser:Portfoliodatauser})
@@ -65,18 +71,18 @@ app.post("/getuserdatas", (req,res)=>{
             
         }else{
 
-            res.send({message:" User not register already"})           
+            res.send({message:"User not Register. Kindly Fill the Form and Check"})           
         }
     })
 
 })
 
-app.post('/getuserdata', (req,res)=>{
+app.post('/getuserdata',async(req,res)=>{
 
 
     console.log("getuserdata: ");
 
-    Portfoliodata.findOne({name:req.params.username.toLowerCase()},(err,userdata)=>{
+    Portfoliodata.findOne({username:req.params.username.toLowerCase()},(err,userdata)=>{
         console.log(req.params.username)
         if(userdata){
             res.send(userdata);
@@ -88,35 +94,25 @@ app.post('/getuserdata', (req,res)=>{
         console.log(err)
     });
 
-    // let findoneresult=await Portfoliodata.findOne({name:req.params.username},async(err, userdata)=>{
-    //     console.log("docs: "+userdata);
-    
-    //     if(userdata){
-    //         res.send(userdata);
-
-    //     }else if(err){
-
-    //         res.send({message:"User data is not avaibale."})
-    //     }
-
-    // })
 
 
 })
 
-app.post('/setuserdata',  (req,res)=>{
-    const{name,fullname,jobdescription,area1,area2,service,serviceareatitle1,serviceareadesc1,
+app.post('/setuserdata',async(req,res)=>{
+    const{username,fullname,jobdescription,area1,area2,service,serviceareatitle1,serviceareadesc1,
         serviceareadesc2,serviceareatitle2,serviceareadesc3,serviceareatitle3,gitlink,cvlink,
-        yearexperiance,projectcomplited,companies} = req.body;
-
+        yearexperiance,projectcomplited,companies,instalink,linkedinlink,currentyearexperiance,workdescription,mobile,email,date} = req.body;
+       
     const setvalue={
         // $set:{
-        name:name.toLowerCase(),
+        username:username,
         fullname:fullname,
         jobdescription:jobdescription,
         area1:area1,
         area2:area2,
         gitlink:gitlink,
+        instalink:instalink,
+        linkedinlink:linkedinlink,
         services:{
             service:service,
             servicearea:{
@@ -131,18 +127,25 @@ app.post('/setuserdata',  (req,res)=>{
         cvlink:cvlink,
         yearexperiance:yearexperiance,
         projectcomplited:projectcomplited,
-        companies:companies
-    //    }
+        currentyearexperiance:currentyearexperiance,
+        companies:companies,
+        workdescription:workdescription,
+        email:email,
+        mobile:mobile,
+        date: date
+    //    },mobile,email
     }
 
     const updatevalue={
          $set:{
-        name:name,
+        username:username,
         fullname:fullname,
         jobdescription:jobdescription,
         area1:area1,
         area2:area2,
         gitlink:gitlink,
+        instalink:instalink,
+        linkedinlink:linkedinlink,
         services:{
             service:service,
             servicearea:{
@@ -157,19 +160,29 @@ app.post('/setuserdata',  (req,res)=>{
         cvlink:cvlink,
         yearexperiance:yearexperiance,
         projectcomplited:projectcomplited,
-        companies:companies
+        currentyearexperiance:currentyearexperiance,
+        companies:companies,
+        workdescription:workdescription,
+        email:email,
+        mobile:mobile,
+        date:date
        }
     }
-
-let findoneresult= Portfoliodata.findOne({name:req.params.username},async(err, docs)=>{
+    console.log("setuserdata: ");
+    console.log("username : "+username);
+    
+    
+          await Portfoliodata.findOne({username:username}).then( async(docs)=>{
     console.log("docs: "+docs);
 
     if(docs){
 
-    let result =  Portfoliodata.updateOne( {username:req.params.username }, updatevalue,{new: true},(err,Portfoliodatasubmit)=>{
+    await Portfoliodata.updateOne( {username:username },updatevalue).then(Portfoliodatasubmit=>{
        // console.log("req.params.updateOne : "+Portfoliodatas)
-        console.log("req.params.username : "+req.params.username)
-       // console.log("Portfoliodatasubmit : "+Portfoliodatasubmit)
+       // console.log("req.params.username : "+req.params.username)
+        console.log("Portfoliodatasubmit : "+Portfoliodatasubmit)
+        console.log("err : "+err)
+
         if(Portfoliodatasubmit){
             res.send({message:"Portfolio data Updated successful"})
            
@@ -178,16 +191,16 @@ let findoneresult= Portfoliodata.findOne({name:req.params.username},async(err, d
             res.send({message:"Error in updating Portfolio data submited successful"})
            
         }
-    }).catch((err)=>{
-        console.log(err)
     });
 
 }else{
 
 
     const Portfoliodatasave = new Portfoliodata(setvalue);
-        let result = Portfoliodatasave.save((err,Portfoliodatasubmit)=>{
+    
+             await Portfoliodatasave.save().then(Portfoliodatasubmit=>{
             console.log("req.params.Portfoliodatasubmit else : "+Portfoliodatasubmit)
+            console.log("req.params.setvalue : "+JSON.stringify(setvalue))
             //console.log("req.params.username else : "+req.params.username)
             if(Portfoliodatasubmit){
                 res.send({message:"Portfolio data submited successful"})
@@ -207,43 +220,7 @@ let findoneresult= Portfoliodata.findOne({name:req.params.username},async(err, d
 
       //  console.log("findoneresult.toObject(): "+findoneresult.toObject())
  if(true){
-    //findoneresult.toObject()
-        // async()=>{
-           
-        //     // if(Portfoliodatas){
-        //        // const Portfoliodatasave = new Portfoliodata(updatevalue);
-                
-        //         let result = await Portfoliodata.updateOne({username:req.params.username }, updatevalue,{new: true}).then((err,Portfoliodatasubmit)=>{
-        //             console.log("req.params.updateOne : "+Portfoliodatas)
-        //             console.log("req.params.username : "+req.params.username)
-        //             console.log("Portfoliodatasubmit : "+Portfoliodatasubmit)
-        //             if(Portfoliodatasubmit){
-        //                 res.send({message:"Portfolio data submited successful"})
-        //             }else{
-            
-        //                 res.send({message:"Error in updating Portfolio data submited successful"})
-        //             }
-        //         })
-
-        //     // }
-
-
-        // }
-
-
-
-
-        //const Portfoliodatas = new Portfoliodata({setvalue});
-        //insertOne
-        // Portfoliodatas.save((err,Portfoliodatasubmit)=>{
-        //     console.log("req.params.username : "+req.params.username)
-        //     if(Portfoliodatasubmit){
-        //         res.send({message:"Portfolio data submited successful"})
-        //     }else{
-    
-        //         res.send({message:"Error in updating Portfolio data submited successful"})
-        //     }
-        // })
+   
         
     }else{
 
@@ -256,46 +233,16 @@ let findoneresult= Portfoliodata.findOne({name:req.params.username},async(err, d
     
                 res.send({message:"Error in updating Portfolio data submited successful"})
             }
-        });
-
-        // Portfoliodata.updateOne({username:req.params.username ,setvalue},(err,Portfoliodatasubmit)=>{
-        //     console.log("req.params.username : "+req.params.username)
-        //     if(Portfoliodatasubmit){
-        //         res.send({message:"Portfolio data submited successful"})
-        //     }else{
-    
-        //         res.send({message:"Error in updating Portfolio data submited successful"})
-        //     }
-        // })       
+        });             
     }
 })
-
-
-   
-        
-        
-        //,(err,Portfoliodata)=>{
-        // if(Portfoliodata){
-        //     // if(Portfoliodata.username){
-        //         res.send({Portfoliodata:Portfoliodata})
-        //     // }else{
-        //     //     res.send({message:"User not register alreadyPassword is incorrect"})
-        //     // }
-            
-        // }else{
-
-        //     res.send({message:" User is not register already"})           
-        // }
-   // })
-
-
-
-    //res.send("My API");
+       
 
 app.post("/login", (req,res)=>{
     const{email,password} = req.body;
-
+    console.log("Inside login ");
     User.findOne({email:email},(err,user)=>{
+        console.log(user)
         if(user){
             if(password===user.password){
                 res.send({message:"Login Successfull ",user:user})
@@ -315,32 +262,32 @@ app.post("/login", (req,res)=>{
     
 })
 
-app.post("/register", (req,res)=>{
+app.post("/register",async (req,res)=>{
 
-    const{name,email,password} = req.body;
-    User.findOne({email:email.toLowerCase()},(err,user)=>{
-       // console.log("user /register : "+ user);
+    const{name,email,password,fullname,phoneNumber} = req.body;
+    console.log("Inside register ");
+    await User.findOne({email:email}).then(async(user)=>{
         if(user){
-           // console.log("User already register ");
+           // 
             res.send({message:" User already register"})
+            console.log("User already register ");
         }else{
-
-            const user = new User({name,email,password},{timestamps: true});
+            const user = new User({name,email,password,fullname,phoneNumber});
            // console.log("User already register ");
-            user.save(err=>{
+           await user.save().then(err=>{
                  if(err){
-                         res.send(err)
+                    res.send({message:"Successfully Registered."})
+                    console.log("New register ");                        
                         }else{
-                               res.send({message:"Successfully Registered. Kindly log in."})
+                            res.send(err)
+                              
                             }
                      })
         }
     })
     
-    console.log(req.body);
-    // res.send("My API Register")
 });
 
-app.listen(9002,()=>{
+app.listen(port,()=>{
     console.log(("Started at port 9002"));
 });
